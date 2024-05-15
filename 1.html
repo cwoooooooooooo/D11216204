@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=
+    , initial-scale=1.0">
+    <title>Document</title>
+     
+ 	
+    <style>
+        .main{
+            width: 1200px;
+            height: 600px;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+        }
+        .grid{
+            display: block;
+            width:24.7%;
+            height: 300px;
+            border: 1px solid black;
+            position: relative;
+        }
+        p{
+            position: absolute;
+            top:0;
+            left:0;
+        }
+    </style>
+    <div class="main">
+        <div id="g1" class="grid"><p>雙擊事件(doubleClick event)</p>
+            <script>
+                let g1 = document.getElementById('g1')
+                let x1 = true
+                
+                g1.addEventListener('dblclick', ()=>{
+                    if(x1){
+                        g1.style.backgroundColor = "Red";
+                        x1 = false;
+                    }else{
+                        g1.style.backgroundColor = "White";
+                        x1 = true;
+                    }
+                })
+            </script>
+        </div>
+        <div id="g2" class="grid"><img src="./terrible.jpg" style="width:100%;height:100%;display:none;opacity:0.3;"><p>雙擊事件(doubleClick event)</p>
+            <script>
+                let g2 = document.getElementById('g2')
+                let x2 = true
+                
+                g2.addEventListener('dblclick', ()=>{
+                    if(x2){
+                        g2.children[0].style.display = "block";
+                        x2 = false;
+                    }else{
+                        g2.children[0].style.display = "none";
+                        x2 = true;
+                    }
+                })    
+            </script>
+        </div>
+        <div id="g3" class="grid"><p>單擊事件(Click event)</p>
+        <script>
+             let g3 = document.getElementById('g3')
+        let x3 = true
+        
+        g3.addEventListener('click', ()=>{
+            if(x3){
+                g3.style.backgroundColor = "blue";
+                x3 = false;
+            }else{
+                g3.style.backgroundColor = "White";
+                x3 = true;
+            }
+        })        
+        </script>
+        </div>
+        <div id="g4" class="grid"><img src="./terrible.jpg" style="width:100%;height:100%;display:none;opacity:0.3;"><p>單擊事件(Click event)</p>
+            <script>
+                 let g4 = document.getElementById('g4')
+        let x4 = true
+        
+        g4.addEventListener('click', ()=>{
+            if(x4){
+                g4.children[0].style.display = "block";
+                x4 = false;
+            }else{
+                g4.children[0].style.display = "none";
+                x4 = true;
+            }
+        })      
+            </script>   
+        </div>
+        <div id="g5" class="grid"><p>滑入事件(mouseover event/mouseout event)</p>
+        <script>
+          let g5 = document.getElementById('g5')
+        g5.addEventListener('mouseover', ()=>{
+            g5.style.backgroundColor = "green";
+            g5.addEventListener('mouseout',() => {
+                g5.style.backgroundColor = "White";
+            })
+    })  
+        </script>
+        </div>
+        <div id="g6" class="grid"><img src="./terrible.jpg" style="width:100%;height:100%;display:none;opacity:0.3;"><p>滑入事件(mouseover event/mouseout event)</p>
+        <script>
+            let g6 = document.getElementById('g6')
+        let x6 = true
+        g6.addEventListener('mouseover', ()=>{
+            g6.children[0].style.display = "block";
+            g6.addEventListener('mouseout',() => {
+                g6.children[0].style.display = "none";
+            })
+        })
+        </script>
+        </div>
+        <div id="g7" class="grid"><p>彈開事件(mouseUp event)</p>
+        <script>
+            let g7 = document.getElementById('g7')
+        let x7 = true
+        
+        g7.addEventListener('mouseup', ()=>{
+            if(x7){
+                g7.style.backgroundColor = "purple";
+                x7 = false;
+            }else{
+                g7.style.backgroundColor = "White";
+                x7 = true;
+            }
+        })
+        </script>
+        </div>
+        <div id="g8" class="grid"><img src="./terrible.jpg" style="width:100%;height:100%;display:none;opacity:0.3;"><p>彈開事件(mouseUp event)</p>
+        <script>
+             let g8 = document.getElementById('g8')
+        let x8 = true
+        
+        g8.addEventListener('mouseup', ()=>{
+            if(x8){
+                g8.children[0].style.display = "block";
+                x8 = false;
+            }else{
+                g8.children[0].style.display = "none";
+                x8 = true;
+            }
+        })
+        </script>
+        </div>
+    </div>
+</head>
+<body>
+</body>
+</html>
