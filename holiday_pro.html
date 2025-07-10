@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Holiday - 多國節日查詢</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%; margin: 0; overflow-x: hidden;
+    }
+    body {
+      background: radial-gradient(circle at center, #ffecd2, #fcb69f);
+      background-attachment: fixed;
+      font-family: "Microsoft JhengHei", sans-serif;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px; position: relative; min-height: 100vh;
+      color: #333;
+    }
+    body::before {
+      content: "";
+      position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.2) 0px,
+        rgba(255,255,255,0.2) 10px,
+        transparent 10px,
+        transparent 20px
+      );
+      animation: move 30s linear infinite; z-index: 0;
+    }
+    @keyframes move {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .holiday-card {
+      background-color: rgba(255,255,255,0.95);
+      padding: 30px; border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      max-width: 900px; width: 100%; z-index: 1;
+    }
+    table th, table td {
+      vertical-align: middle !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- 查詢畫面 -->
+  <div id="search-section" class="holiday-card text-center">
+    <h1 class="mb-4 text-primary">
+      <i class="bi bi-calendar-event me-2"></i>Holiday - 多國節日查詢
+    </h1>
+    <div class="row g-3 mb-3 justify-content-center">
+      <div class="col-6 col-md-4">
+        <label for="country" class="form-label visually-hidden">選擇國家</label>
+        <select id="country" class="form-select form-select-lg" onchange="clearResult()">
+          <option value="TW" selected>台灣 (TW)</option>
+          <option value="JP">日本 (JP)</option>
+          <option value="DE">德國 (DE)</option>
+          <option value="HK">香港 (HK)</option>
+          <option value="SG">新加坡 (SG)</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label for="year" class="form-label visually-hidden">選擇年份</label>
+        <select id="year" class="form-select form-select-lg" onchange="clearResult()"></select>
+      </div>
+      <div class="col-12 col-md-3">
+        <button id="searchBtn" class="btn btn-success btn-lg w-100" onclick="fetchHolidays()">
+          <i class="bi bi-search"></i> 查詢
+        </button>
+      </div>
+    </div>
+    <div id="result-message" class="mt-3"></div>
+  </div>
+
+  <!-- 結果畫面 -->
+  <div id="result-section" class="holiday-card text-start d-none">
+    <div id="result-content" class="mb-4"></div>
+    <div class="text-center">
+      <button class="btn btn-secondary" onclick="goBack()">
+        ← 返回查詢
+      </button>
+    </div>
+  </div>
+
+<script>
+  const yearSelect = document.getElementById("year");
+  const countrySelect = document.getElementById("country");
+  const searchBtn = document.getElementById("searchBtn");
+  const resultContent = document.getElementById("result-content");
+  const resultMessage = document.getElementById("result-message");
+
+  const nowYear = new Date().getFullYear();
+  for(let y=2000; y <= nowYear + 2; y++){
+    yearSelect.innerHTML += `<option value="${y}">${y} 年</option>`;
+  }
+  yearSelect.value = nowYear;
+
+  const lunarFestivals = [
+    { month: 1, day: 1, name: "農曆新年初一", isHoliday: true },
+    { month: 1, day: 2, name: "農曆新年初二", isHoliday: true },
+    { month: 1, day: 3, name: "農曆新年初三", isHoliday: true },
+    { month: 5, day: 5, name: "端午節", isHoliday: true },
+    { month: 8, day: 15, name: "中秋節", isHoliday: false },
+  ];
+
+  const fixedHolidays = [
+    { month: 1, day: 1, name: "元旦", isHoliday: true },
+    { month: 2, day: 28, name: "和平紀念日", isHoliday: true },
+    { month: 4, day: 4, name: "兒童節", isHoliday: true },
+    { month: 10, day: 10, name: "國慶日", isHoliday: true }
+  ];
+
+  const lunarNewYearDates = {
+    2022: "2022-02-01",
+    2023: "2023-01-22",
+    2024: "2024-02-10",
+    2025: "2025-01-29",
+    2026: "2026-02-17",
+    2027: "2027-02-06",
+    2028: "2028-01-26",
+    2029: "2029-02-13",
+    2030: "2030-02-03"
+  };
+
+  function parseDate(str){
+    const [y,m,d] = str.split("-").map(Number);
+    return new Date(y,m-1,d);
+  }
+
+  function formatDate(date){
+    const y = date.getFullYear();
+    const m = (date.getMonth()+1).toString().padStart(2,"0");
+    const d = date.getDate().toString().padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function lunarToSolar(year, lunarMonth, lunarDay){
+    const lunarNYStr = lunarNewYearDates[year];
+    if(!lunarNYStr) return null;
+    const lunarNY = parseDate(lunarNYStr);
+    const dayOffset = (lunarMonth - 1) * 30 + (lunarDay - 1);
+    const solarDate = new Date(lunarNY);
+    solarDate.setDate(solarDate.getDate() + dayOffset);
+    return formatDate(solarDate);
+  }
+
+  function getTaiwanLunarHolidays(year){
+    const arr = [];
+    lunarFestivals.forEach(f => {
+      const solar = lunarToSolar(year, f.month, f.day);
+      if(solar) arr.push({date: solar, localName: f.name, isHoliday: f.isHoliday});
+    });
+    return arr;
+  }
+
+  function getTaiwanFixedHolidays(year){
+    return fixedHolidays.map(f => {
+      const m = f.month.toString().padStart(2, "0");
+      const d = f.day.toString().padStart(2, "0");
+      return {
+        date: `${year}-${m}-${d}`,
+        localName: f.name,
+        isHoliday: f.isHoliday
+      };
+    });
+  }
+
+  function getTaiwanHolidays(year){
+    const fixed = getTaiwanFixedHolidays(year);
+    const lunar = getTaiwanLunarHolidays(year);
+    const all = [...fixed, ...lunar];
+    all.sort((a,b) => a.date.localeCompare(b.date));
+    return all;
+  }
+
+  function clearResult(){
+    resultMessage.innerHTML = "";
+  }
+
+  async function fetchHolidays(){
+    try {
+      searchBtn.disabled = true;
+      resultMessage.innerHTML = `<div class="text-primary">資料查詢中，請稍候...</div>`;
+      const country = countrySelect.value;
+      const year = yearSelect.value;
+
+      if(country === "TW"){
+        const data = getTaiwanHolidays(year);
+        resultContent.innerHTML = generateTableHTML(data);
+      } else {
+        const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${country}`);
+        const data = await response.json();
+        if(!data || data.length === 0){
+          resultContent.innerHTML = `<div class="alert alert-warning">查無資料，請嘗試其他國家或年份。</div>`;
+        } else {
+          const tableData = data.map(item => ({
+            date: item.date,
+            localName: item.localName,
+            isHoliday: item.type === "Public",
+            global: item.global,
+            counties: item.counties
+          }));
+          resultContent.innerHTML = generateTableHTML(tableData);
+        }
+      }
+      switchToResultPage();
+    } catch(e){
+      console.error(e);
+      resultContent.innerHTML = `<div class="alert alert-danger">查詢失敗，請稍後再試。</div>`;
+      switchToResultPage();
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  function generateTableHTML(data){
+    let html = `<table class="table table-bordered table-hover"><thead class="table-light"><tr>
+      <th>日期</th>
+      <th>節日名稱</th>
+      <th>是否放假</th>
+      <th>適用範圍</th></tr></thead><tbody>`;
+    data.forEach(item => {
+      html += `<tr>
+        <td>${item.date}</td>
+        <td>${item.localName}</td>
+        <td>${item.isHoliday ? "<span class='badge bg-success'>✅ 放假</span>" : "❌ 不放假"}</td>
+        <td>${item.global ? "全國" : (item.counties ? item.counties.join(", ") : "全國")}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    return html;
+  }
+
+  function switchToResultPage(){
+    document.getElementById("search-section").classList.add("d-none");
+    document.getElementById("result-section").classList.remove("d-none");
+  }
+
+  function goBack(){
+    document.getElementById("result-section").classList.add("d-none");
+    document.getElementById("search-section").classList.remove("d-none");
+    resultMessage.innerHTML = "";
+  }
+</script>
+</body>
+</html>

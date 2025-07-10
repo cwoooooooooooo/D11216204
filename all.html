@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>功能整合查詢系統</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: linear-gradient(135deg, #101820, #2c3e50);
+      color: #ecf0f1;
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+    h1, h4, h5 {
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .nav-tabs {
+      border-bottom: none;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .nav-tabs .nav-link {
+      color: #bdc3c7;
+      background: transparent;
+      border: none;
+      margin: 0 10px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: color 0.3s, border-bottom 0.3s;
+    }
+    .nav-tabs .nav-link.active {
+      color: #00d2ff;
+      border-bottom: 3px solid #00d2ff;
+    }
+    .card-custom {
+      background: linear-gradient(135deg, #1a252f, #34495e);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      padding: 30px;
+      margin-bottom: 40px;
+      transition: transform 0.3s;
+    }
+    .card-custom:hover {
+      transform: translateY(-5px);
+    }
+    label {
+      color: #ecf0f1;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .form-control, .form-select {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255,255,255,0.2);
+      box-shadow: 0 0 10px #00d2ff;
+      color: #fff;
+    }
+    .btn-custom {
+      background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 5px 15px rgba(0,210,255,0.4);
+      transition: all 0.3s;
+    }
+    .btn-custom:hover {
+      background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+      box-shadow: 0 8px 20px rgba(0,210,255,0.6);
+      transform: translateY(-2px);
+    }
+    table {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table th {
+      background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+      color: #fff;
+      font-weight: 700;
+    }
+    table td {
+      color: #ecf0f1;
+      vertical-align: middle;
+    }
+    #weatherAirContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+    #weatherSection, #airSection {
+      flex: 1;
+      min-width: 300px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1 class="text-center mb-5 text-white">功能整合查詢系統</h1>
+
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">天氣 & 空氣品質</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">匯率換算</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab3-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab">假日查詢</button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-4">
+
+    <!-- 天氣 & 空氣品質 -->
+    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+      <div id="weatherAirContainer">
+        <div class="card-custom" id="weatherSection">
+          <h4>天氣查詢</h4>
+          <label for="weatherCity">輸入城市名稱</label>
+          <input type="text" class="form-control mb-3" id="weatherCity" placeholder="例如：Taipei" />
+          <button id="weatherBtn" class="btn btn-custom">查詢天氣</button>
+          <div id="weatherResult" class="mt-3"></div>
+        </div>
+        <div class="card-custom" id="airSection">
+          <h4>空氣品質查詢</h4>
+          <label for="airCity">輸入城市名稱</label>
+          <input type="text" class="form-control mb-3" id="airCity" placeholder="例如：Taipei" />
+          <button id="airBtn" class="btn btn-custom">查詢空氣品質</button>
+          <div id="airResult" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 匯率換算 -->
+    <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+      <div class="card-custom">
+        <h4>匯率換算</h4>
+        <div class="row">
+          <div class="col-md-4">
+            <label for="fromCurrency">從</label>
+            <select id="fromCurrency" class="form-select"></select>
+          </div>
+          <div class="col-md-4">
+            <label for="toCurrency">換成</label>
+            <select id="toCurrency" class="form-select"></select>
+          </div>
+          <div class="col-md-4">
+            <label for="amount">金額</label>
+            <input type="number" class="form-control" id="amount" value="1" min="0.01" step="any" />
+          </div>
+        </div>
+        <button id="convertBtn" class="btn btn-custom mt-3">換算</button>
+        <div id="exchangeResult" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- 假日查詢 -->
+    <div class="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="tab3-tab">
+      <div class="card-custom">
+        <h4>假日查詢</h4>
+        <div class="row">
+          <div class="col-md-6">
+            <label for="countrySelect">選擇國家/地區</label>
+            <select id="countrySelect" class="form-select">
+              <option value="TW">台灣 (TW)</option>
+              <option value="JP">日本 (JP)</option>
+              <option value="HK">香港 (HK)</option>
+              <option value="SG">新加坡 (SG)</option>
+              <option value="KR">韓國 (KR)</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="yearSelect">選擇年份</label>
+            <select id="yearSelect" class="form-select"></select>
+          </div>
+        </div>
+        <button id="holidayBtn" class="btn btn-custom mt-3">查詢假日</button>
+        <div id="holidayResult" class="mt-3"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const myWeatherApiKey = "19af989e111a07a6ed10f4011f9e5d67";
+  const myExchangeRateApiKey = "419b6736166f43cf7fe15e79";
+
+  document.getElementById("weatherBtn").addEventListener("click", async () => {
+    const city = document.getElementById("weatherCity").value.trim();
+    const resultDiv = document.getElementById("weatherResult");
+    if (!city) {
+      resultDiv.innerHTML = "<div class='text-danger'>請輸入城市名稱！</div>";
+      return;
+    }
+    resultDiv.innerHTML = "資料讀取中...";
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${myWeatherApiKey}&units=metric&lang=zh_tw`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.cod !== 200) {
+        resultDiv.innerHTML = `<div class='text-danger'>查無天氣資料: ${data.message}</div>`;
+        return;
+      }
+      resultDiv.innerHTML = `
+        <h5>${data.name} 天氣狀況</h5>
+        <p>溫度: ${data.main.temp} °C</p>
+        <p>天氣: ${data.weather[0].description}</p>
+        <p>濕度: ${data.main.humidity}%</p>
+        <p>風速: ${data.wind.speed} m/s</p>
+      `;
+    } catch {
+      resultDiv.innerHTML = "<div class='text-danger'>查詢錯誤，請稍後再試。</div>";
+    }
+  });
+
+  document.getElementById("airBtn").addEventListener("click", async () => {
+    const city = document.getElementById("airCity").value.trim();
+    const resultDiv = document.getElementById("airResult");
+    if (!city) {
+      resultDiv.innerHTML = "<div class='text-danger'>請輸入城市名稱！</div>";
+      return;
+    }
+    resultDiv.innerHTML = "資料讀取中...";
+    try {
+      const geoUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${myWeatherApiKey}`;
+      const geoRes = await fetch(geoUrl);
+      const geoData = await geoRes.json();
+      if (geoData.cod !== 200) {
+        resultDiv.innerHTML = `<div class='text-danger'>查無空氣品質資料: ${geoData.message}</div>`;
+        return;
+      }
+      const lat = geoData.coord.lat;
+      const lon = geoData.coord.lon;
+      const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${myWeatherApiKey}`;
+      const airRes = await fetch(airUrl);
+      const airData = await airRes.json();
+      const aqiLevel = ["非常好", "良好", "普通", "對敏感族群不健康", "對所有族群不健康"];
+      let aqiText = "無資料";
+      if (airData.list && airData.list.length > 0) {
+        const aqi = airData.list[0].main.aqi;
+        aqiText = aqiLevel[aqi - 1] || "未知";
+      }
+      resultDiv.innerHTML = `<h5>${city} 空氣品質指標 (AQI)：${aqiText}</h5>`;
+    } catch {
+      resultDiv.innerHTML = "<div class='text-danger'>查詢錯誤，請稍後再試。</div>";
+    }
+  });
+
+  const currencySelects = ["fromCurrency", "toCurrency"];
+  const currencyList = ["TWD","USD","JPY","EUR","KRW","HKD","SGD","CNY","GBP","AUD","CAD","CHF","NZD","THB","MYR"];
+  currencySelects.forEach(id => {
+    const select = document.getElementById(id);
+    currencyList.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+  });
+  document.getElementById("fromCurrency").value = "TWD";
+  document.getElementById("toCurrency").value = "USD";
+
+  document.getElementById("convertBtn").addEventListener("click", async () => {
+    const from = document.getElementById("fromCurrency").value;
+    const to = document.getElementById("toCurrency").value;
+    const amount = parseFloat(document.getElementById("amount").value);
+    const resultDiv = document.getElementById("exchangeResult");
+    if (isNaN(amount) || amount <= 0) {
+      resultDiv.innerHTML = "<div class='text-danger'>請輸入大於0的金額！</div>";
+      return;
+    }
+    if (from === to) {
+      resultDiv.innerHTML = "<div class='text-warning'>「從」與「換成」不能相同！</div>";
+      return;
+    }
+    resultDiv.innerHTML = "資料讀取中...";
+    try {
+      const url = `https://v6.exchangerate-api.com/v6/${myExchangeRateApiKey}/pair/${from}/${to}/${amount}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.result !== "success") {
+        resultDiv.innerHTML = "<div class='text-danger'>無法取得匯率資料。</div>";
+        return;
+      }
+      resultDiv.innerHTML = `
+        <h5>換算結果</h5>
+        <p>${amount} ${from} ≈ <strong>${data.conversion_result.toFixed(4)}</strong> ${to}</p>
+        <p>匯率：1 ${from} = ${data.conversion_rate.toFixed(4)} ${to}</p>
+        <p>更新時間：${data.time_last_update_utc}</p>
+      `;
+    } catch {
+      resultDiv.innerHTML = "<div class='text-danger'>查詢錯誤，請稍後再試。</div>";
+    }
+  });
+
+  const yearSelect = document.getElementById("yearSelect");
+  const nowYear = new Date().getFullYear();
+  for (let y = nowYear - 20; y <= nowYear + 5; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y + " 年";
+    yearSelect.appendChild(opt);
+  }
+  yearSelect.value = nowYear;
+
+  const taiwanHolidays = {
+    "0101": "元旦",
+    "0214": "情人節",
+    "0312": "植樹節",
+    "1001": "國慶日",
+    "1225": "聖誕節"
+  };
+
+  document.getElementById("holidayBtn").addEventListener("click", async () => {
+    const country = document.getElementById("countrySelect").value;
+    const year = document.getElementById("yearSelect").value;
+    const resultDiv = document.getElementById("holidayResult");
+    resultDiv.innerHTML = "資料讀取中...";
+    if (country === "TW") {
+      let html = "<table class='table table-striped'><thead><tr><th>日期</th><th>節日名稱</th><th>是否放假</th></tr></thead><tbody>";
+      for (const md in taiwanHolidays) {
+        const dateStr = `${year}-${md.slice(0,2)}-${md.slice(2,4)}`;
+        html += `<tr><td>${dateStr}</td><td>${taiwanHolidays[md]}</td><td>✅ 放假</td></tr>`;
+      }
+      html += "</tbody></table>";
+      resultDiv.innerHTML = html;
+      return;
+    }
+    try {
+      const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/${country}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        resultDiv.innerHTML = "<div class='text-warning'>查無假日資料。</div>";
+        return;
+      }
+      let html = "<table class='table table-striped'><thead><tr><th>日期</th><th>節日名稱</th><th>是否放假</th></tr></thead><tbody>";
+      data.forEach(item => {
+        html += `<tr><td>${item.date}</td><td>${item.localName}</td><td>${item.type === "Public" ? "✅ 放假" : "❌ 不放假"}</td></tr>`;
+      });
+      html += "</tbody></table>";
+      resultDiv.innerHTML = html;
+    } catch {
+      resultDiv.innerHTML = "<div class='text-danger'>查詢錯誤，請稍後再試。</div>";
+    }
+  });
+</script>
+</body>
+</html>
